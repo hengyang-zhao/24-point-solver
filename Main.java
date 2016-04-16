@@ -1,13 +1,14 @@
 import java.util.ArrayList;
+import java.math.BigInteger;
 
 public class Main {
 	public static void main(String[] args) {
 		ArrayList<Evaluatable> numbers = new ArrayList<Evaluatable>();
-		int target = Integer.parseInt(args[0]);
+		Rational target = new Rational(args[0]);
 
 		for (int i = 1; i < args.length; ++i) {
 			System.out.print(args[i] + " ");
-			numbers.add(new Number(Integer.parseInt(args[i])));
+			numbers.add(new Number(args[i]));
 		}
 
 		TheSolver solver = new TheSolver(numbers);
@@ -22,17 +23,13 @@ class TheSolver {
 		this.numbers = numbers;
 	}
 
-	public Evaluatable SolveForTarget(int target) {
+	public Evaluatable SolveForTarget(Rational target) {
 		return _RecursiveSearch(this.numbers, target);
 	}
 
-	private boolean _IsEqual(double value, int target) {
-		return value - target < 1e-6 && target - value < 1e-6;
-	}
-
-	private Evaluatable _RecursiveSearch(ArrayList<Evaluatable> elist, int target) {
+	private Evaluatable _RecursiveSearch(ArrayList<Evaluatable> elist, Rational target) {
 		if (elist.size() == 1) {
-			if (_IsEqual(elist.get(0).Evaluate(), target)) return elist.get(0);
+			if (elist.get(0).Evaluate().EqualsTo(target)) return elist.get(0);
 			else return null;
 		} else {
 			for (int op: _usableOperators) {
@@ -73,7 +70,7 @@ class TheSolver {
 }
 
 interface Evaluatable {
-	double Evaluate();
+	Rational Evaluate();
 }
 
 class Operator implements Evaluatable {
@@ -88,16 +85,16 @@ class Operator implements Evaluatable {
 		this.op = op;
 	}
 
-	public double Evaluate() {
+	public Rational Evaluate() {
 		switch (this.op) {
 			case PLUS:
-				return lhs.Evaluate() + rhs.Evaluate();
+				return lhs.Evaluate().Add(rhs.Evaluate());
 			case MINUS:
-				return lhs.Evaluate() - rhs.Evaluate();
+				return lhs.Evaluate().Subtract(rhs.Evaluate());
 			case DIVIDE:
-				return lhs.Evaluate() / rhs.Evaluate();
+				return lhs.Evaluate().Divide(rhs.Evaluate());
 			case MULTIPLY:
-				return lhs.Evaluate() * rhs.Evaluate();
+				return lhs.Evaluate().Multiply(rhs.Evaluate());
 			default:
 				throw new AssertionError("Invalid operator");
 		}
@@ -158,23 +155,105 @@ class Operator implements Evaluatable {
 
 class Number implements Evaluatable {
 
-	public Number(int value) {
-		this.value = value;
+	public Number(String value) {
+		this.value = new Rational(value);
 	}
 
-	public double Evaluate() {
+	public Rational Evaluate() {
 		return this.value;
 	}
 
-	public void SetValue(int value) {
-		this.value = value;
+	public String toString() {
+		return this.value.toString();
+	}
+
+	private Rational value;
+}
+
+class Rational {
+
+	public Rational(String numer) {
+		this.numer = new BigInteger(numer);
+		this.denom = BigInteger.ONE;
+	}
+
+	public Rational(String numer, String denom) {
+		this.numer = new BigInteger(numer);
+		this.denom = new BigInteger(denom);
+
+		_Simplify();
+	}
+
+	public Rational(BigInteger numer, BigInteger denom) {
+		this.numer = numer;
+		this.denom = denom;
+
+		_Simplify();
+	}
+
+	public Rational Add(Rational that) {
+		Rational ret = new Rational(
+				this.numer.multiply(that.denom).add(this.denom.multiply(that.numer)),
+				this.denom.multiply(that.denom));
+		ret._Simplify();
+		return ret;
+	}
+
+	public Rational Subtract(Rational that) {
+		Rational ret = new Rational(
+				this.numer.multiply(that.denom).subtract(this.denom.multiply(that.numer)),
+				this.denom.multiply(that.denom));
+		ret._Simplify();
+		return ret;
+	}
+
+	public Rational Multiply(Rational that) {
+		Rational ret = new Rational(
+				this.numer.multiply(that.numer),
+				this.denom.multiply(that.denom));
+		ret._Simplify();
+		return ret;
+	}
+
+	public Rational Divide(Rational that) {
+		Rational ret = new Rational(
+				this.numer.multiply(that.denom),
+				this.denom.multiply(that.numer));
+		ret._Simplify();
+		return ret;
 	}
 
 	public String toString() {
-		return Integer.toString(this.value);
+		if (this.denom.equals(BigInteger.ONE)) {
+			return this.numer.toString();
+		} else {
+			return this.numer.toString() + "/" + this.denom.toString();
+		}
 	}
 
-	private int value;
+	public boolean EqualsTo(Object o) {
+		if (o instanceof Rational) {
+			Rational r = (Rational) o;
+			return this.numer.equals(r.numer) && this.denom.equals(r.denom);
+		} else {
+			return false;
+		}
+	}
+
+	private void _Simplify() {
+		BigInteger gcd = this.denom.gcd(this.numer);
+
+		if (this.denom.compareTo(BigInteger.ZERO) < 0) {
+			this.denom = this.denom.divide(gcd.negate());
+			this.numer = this.numer.divide(gcd.negate());
+		} else {
+			this.denom = this.denom.divide(gcd);
+			this.numer = this.numer.divide(gcd);
+		}
+	}
+
+	private BigInteger numer;
+	private BigInteger denom;
 }
 
 // vim: set ts=4 sw=4:
