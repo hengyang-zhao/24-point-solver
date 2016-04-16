@@ -243,6 +243,8 @@ class Rational {
 	private void _Simplify() {
 		BigInteger gcd = this.denom.gcd(this.numer);
 
+		if (gcd.equals(BigInteger.ZERO)) return;
+
 		if (this.denom.compareTo(BigInteger.ZERO) < 0) {
 			this.denom = this.denom.divide(gcd.negate());
 			this.numer = this.numer.divide(gcd.negate());
