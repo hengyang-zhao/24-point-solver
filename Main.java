@@ -6,15 +6,13 @@ public class Main {
 		ArrayList<Evaluatable> numbers = new ArrayList<Evaluatable>();
 		Rational target = new Rational(args[0]);
 
-		for (int i = 1; i < args.length; ++i) {
-			System.out.print(args[i] + " ");
+		for (int i = 1; i < args.length; ++i)
 			numbers.add(new Number(args[i]));
-		}
 
 		TheSolver solver = new TheSolver(numbers);
 		Evaluatable result = solver.SolveForTarget(target);
 
-		System.out.println("--> " + (result == null ? "none" : result) + " = " + target);
+		System.out.println(result == null ? "none" : result);
 	}
 }
 
