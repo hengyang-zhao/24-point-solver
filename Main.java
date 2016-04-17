@@ -34,7 +34,7 @@ class TheSolver {
 				for (int i = 0; i < elist.size(); ++i) {
 					for (int j = 0; j < elist.size(); ++j) {
 						if (i == j) continue;
-						if ((op == Operator.PLUS || op == Operator.MULTIPLY) && i > j) continue;
+						if ((op == Operation.PLUS || op == Operation.MULTIPLY) && i > j) continue;
 						Evaluatable result = _RecursiveSearch(_BuildUp(elist, i, j, op), target);
 						if (result != null) return result;
 					}
@@ -46,7 +46,7 @@ class TheSolver {
 
 	private ArrayList<Evaluatable> _BuildUp(ArrayList<Evaluatable> from, int lIndex, int rIndex, int op) {
 		ArrayList<Evaluatable> result = new ArrayList<Evaluatable>();
-		result.add(new Operator(from.get(lIndex), from.get(rIndex), op));
+		result.add(new Operation(from.get(lIndex), from.get(rIndex), op));
 
 		for (int i = 0; i < from.size(); ++i) {
 			if (i == lIndex || i == rIndex) continue;
@@ -60,10 +60,10 @@ class TheSolver {
 	static private ArrayList<Integer> _usableOperators;
 	static {
 		_usableOperators = new ArrayList<Integer>();
-		_usableOperators.add(Operator.PLUS);
-		_usableOperators.add(Operator.MINUS);
-		_usableOperators.add(Operator.DIVIDE);
-		_usableOperators.add(Operator.MULTIPLY);
+		_usableOperators.add(Operation.PLUS);
+		_usableOperators.add(Operation.MINUS);
+		_usableOperators.add(Operation.DIVIDE);
+		_usableOperators.add(Operation.MULTIPLY);
 	}
 }
 
@@ -71,13 +71,13 @@ interface Evaluatable {
 	Rational Evaluate();
 }
 
-class Operator implements Evaluatable {
+class Operation implements Evaluatable {
 	public static final int PLUS = 0;
 	public static final int MINUS = 1;
 	public static final int DIVIDE = 2;
 	public static final int MULTIPLY = 3;
 
-	public Operator(Evaluatable lhs, Evaluatable rhs, int op) {
+	public Operation(Evaluatable lhs, Evaluatable rhs, int op) {
 		this.lhs = lhs;
 		this.rhs = rhs;
 		this.op = op;
@@ -120,19 +120,19 @@ class Operator implements Evaluatable {
 		boolean needsLParen = false;
 		boolean needsRParen = false;
 
-		if (this.lhs != null && this.lhs instanceof Operator) {
+		if (this.lhs != null && this.lhs instanceof Operation) {
 			if ((this.op == MULTIPLY || this.op == DIVIDE) &&
-					((Operator) this.lhs).op == PLUS || ((Operator) this.lhs).op == MINUS) {
+					((Operation) this.lhs).op == PLUS || ((Operation) this.lhs).op == MINUS) {
 				needsLParen = true;
 			}
 		}
 
-		if (this.rhs != null && this.rhs instanceof Operator) {
+		if (this.rhs != null && this.rhs instanceof Operation) {
 			if (this.op == DIVIDE) {
 				needsRParen = true;
-			} else if (this.op == MULTIPLY && (((Operator) this.rhs).op == PLUS || ((Operator) this.rhs).op == MINUS)) {
+			} else if (this.op == MULTIPLY && (((Operation) this.rhs).op == PLUS || ((Operation) this.rhs).op == MINUS)) {
 				needsRParen = true;
-			} else if ((this.op == MINUS) && (((Operator) this.rhs).op == PLUS || ((Operator) this.rhs).op == MINUS)) {
+			} else if ((this.op == MINUS) && (((Operation) this.rhs).op == PLUS || ((Operation) this.rhs).op == MINUS)) {
 				needsRParen = true;
 			}
 		}
@@ -143,7 +143,7 @@ class Operator implements Evaluatable {
 
 	private boolean _NeedsParenthesis(Evaluatable e) {
 		return( this.op == MULTIPLY || this.op == DIVIDE) && e != null &&
-			e instanceof Operator && (((Operator) e).op == PLUS || ((Operator) e).op == MINUS);
+			e instanceof Operation && (((Operation) e).op == PLUS || ((Operation) e).op == MINUS);
 	}
 
 	private Evaluatable lhs;
