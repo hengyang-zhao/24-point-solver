@@ -7,7 +7,7 @@ public class Main {
 		Rational target = new Rational(args[0]);
 
 		for (int i = 1; i < args.length; ++i)
-			numbers.add(new Number(args[i]));
+			numbers.add(new Rational(args[i]));
 
 		TheSolver solver = new TheSolver(numbers);
 		Evaluatable result = solver.SolveForTarget(target);
@@ -151,24 +151,7 @@ class Operator implements Evaluatable {
 	private int op;
 }
 
-class Number implements Evaluatable {
-
-	public Number(String value) {
-		this.value = new Rational(value);
-	}
-
-	public Rational Evaluate() {
-		return this.value;
-	}
-
-	public String toString() {
-		return this.value.toString();
-	}
-
-	private Rational value;
-}
-
-class Rational {
+class Rational implements Evaluatable {
 
 	public Rational(String numer) {
 		this.numer = new BigInteger(numer);
@@ -219,6 +202,10 @@ class Rational {
 				this.denom.multiply(that.numer));
 		ret._Simplify();
 		return ret;
+	}
+
+	public Rational Evaluate() {
+		return this;
 	}
 
 	public String toString() {
